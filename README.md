@@ -4,7 +4,7 @@ Learn git by using real git. GitQuest gives you a real terminal (your own `zsh`)
 
 ## Install
 
-1. Download `GitQuest-<version>-arm64.dmg` and open it.
+1. Download `GitQuest-<version>-arm64.dmg` from the [latest release](https://github.com/khusa71/gitquest-mac/releases/latest) and open it.
 2. Drag **GitQuest** into **Applications**.
 3. **First launch:** the app is not signed with an Apple Developer ID, so Gatekeeper blocks a normal double-click. In Applications, right-click (or Control-click) **GitQuest** and choose **Open**, then click **Open** again. You only do this once.
    - On macOS 15 and later, if no Open button appears: open **System Settings → Privacy & Security**, scroll down to the message about GitQuest, and click **Open Anyway**.
