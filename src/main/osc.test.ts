@@ -47,7 +47,7 @@ describe('OscParser', () => {
   });
 
   it('leaves non-gq OSC sequences untouched, even when split', () => {
-    const title = '\x1b]0;khush@mac: ~/GitQuest/nova\x07';
+    const title = '\x1b]0;you@mac: ~/GitQuest/nova\x07';
     const other777 = '\x1b]777;notify;Title;Body\x07';
     const st = '\x1b]8;;https://example.com\x1b\\link\x1b]8;;\x1b\\';
     const full = `${title}${other777}${st}${done(0)}`;

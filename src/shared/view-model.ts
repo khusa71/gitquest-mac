@@ -170,7 +170,7 @@ export interface PanelData {
 }
 
 export interface WorkspaceView {
-  /** Absolute path of the practice repo, e.g. /Users/khush/GitQuest/nova */
+  /** Absolute path of the practice repo, e.g. /Users/you/GitQuest/nova */
   readonly repoPath: string;
   /** Same path with the home folder shown as "~". */
   readonly repoLabel: string;

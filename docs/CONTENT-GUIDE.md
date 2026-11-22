@@ -6,9 +6,8 @@ propose shared changes in your report. English only. No npm install, no commits.
 
 ## Curriculum source
 
-The plan is `/private/tmp/claude-501/-Users-khush-Desktop-git-game/37af36e0-eb30-4532-bac3-79f5509be4f9/scratchpad/mac-plan.md`,
-section "2.3 Proposed Mac edition curriculum" (and 2.4 lesson vs hands-on, 2.5 GitHub feasibility, 2.6 danger topics).
-The full topic list is `…/scratchpad/topics.md`. The plan numbers chapters differently from our levels — map by topic:
+The curriculum plan (not in the repo), section "2.3 Proposed Mac edition curriculum" (and 2.4 lesson vs hands-on, 2.5 GitHub feasibility, 2.6 danger topics).
+The full topic list (also not in the repo) is the source for each level's topics. The plan numbers chapters differently from our levels — map by topic:
 
 | Our level | Topic-list level | Plan chapter |
 |---|---|---|

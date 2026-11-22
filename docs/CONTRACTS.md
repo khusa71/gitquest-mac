@@ -18,7 +18,7 @@ node-pty built for Electron, vitest, typescript). **Do not run npm install**; if
 Do not commit. Typecheck only your folder: `npx tsc --noEmit -p tsconfig.json 2>&1 | grep "^src/<folder>"`.
 Tests: `npx vitest run src/<folder>`.
 
-Reference code (read-only) — the web game this is ported from: `/Users/khush/Desktop/git game/git-quest-engine/`
+Reference code (read-only) — the web game this is ported from: [MattiaPARRINELLO/git-quest](https://github.com/MattiaPARRINELLO/git-quest)
 (`src/engine/validate.ts`, `src/story/*`, `src/content/story/root.ts` + `01.ts`, `src/content/chapters/01-under-the-hood/missions/1-1..1-3.ts`,
 English text in `src/content/catalogs/en/chapter-01.ts`, `src/engine/__tests__/differential.test.ts` reads a real repo into RepoState).
 
@@ -77,8 +77,6 @@ read-only ones (`git status|log|diff|show|help|branch` without args, `ls`, `cat`
 
 ## Design (ui agent)
 
-Reference mockups: `/private/tmp/claude-501/-Users-khush-Desktop-git-game/37af36e0-eb30-4532-bac3-79f5509be4f9/scratchpad/macui/project/`
-(`Main.dc.html` workspace, `Map.dc.html` levels, `Setup.dc.html` first run; open them as plain HTML, ignore the `x-dc`/`helmet` wrappers).
 GitHub Primer dark palette, system font stack, SF Mono / ui-monospace for code. Colour only carries meaning
 (branch lanes, disk = attention #d29922, index = success #3fb950, check pass/fail). Diagram-first: history as snapshot cards,
 the three areas as Disk → Index → HEAD with forward and backward commands.

@@ -10,7 +10,7 @@ English only, no npm install, no commits.
 - **Builds a mental model before commands.** Explain what git stores and why the command behaves that way
   (snapshots not diffs, branches as labels, the index as the next commit, remotes as copies that only sync on request,
   reflog as HEAD's diary, objects addressed by content). Commands come after the model.
-- **Covers every topic of the level in the topic list** (`…/scratchpad/topics.md`, mapping in docs/CONTENT-GUIDE.md),
+- **Covers every topic of the level in the topic list** (mapping in docs/CONTENT-GUIDE.md),
   including the ones no mission practises (list those in `theoryOnly`). Read the level's missions
   (`src/game/levels/levelN.ts`) so the lesson prepares exactly what they need and uses the same Nova story and files.
 - **One idea per concept slide**, 2–5 short paragraphs, a diagram whenever a picture explains it better
