@@ -6,9 +6,11 @@ Learn git by using real git. GitQuest gives you a real terminal (your own `zsh`)
 
 1. Download `GitQuest-<version>-arm64.dmg` from the [latest release](https://github.com/khusa71/gitquest-mac/releases/latest) and open it.
 2. Drag **GitQuest** into **Applications**.
-3. **First launch:** the app is not signed with an Apple Developer ID, so Gatekeeper blocks a normal double-click. In Applications, right-click (or Control-click) **GitQuest** and choose **Open**, then click **Open** again. You only do this once.
-   - On macOS 15 and later, if no Open button appears: open **System Settings → Privacy & Security**, scroll down to the message about GitQuest, and click **Open Anyway**.
-   - Terminal alternative: `xattr -dr com.apple.quarantine /Applications/GitQuest.app`
+3. **First launch:** the app is not signed with an Apple Developer ID, so macOS says *"Apple could not verify GitQuest is free of malware"*. Click **Done** (not Move to Bin), then either:
+   - Open **System Settings → Privacy & Security**, scroll down to *"GitQuest was blocked"*, click **Open Anyway** and confirm with your password. You only do this once.
+   - Or run in Terminal: `xattr -dr com.apple.quarantine /Applications/GitQuest.app`, then open GitQuest normally.
+
+   On macOS 14 and earlier, right-click **GitQuest** → **Open** → **Open** also works.
 
 The first time you use the voice tutor, macOS asks for Microphone and Speech Recognition access.
 
