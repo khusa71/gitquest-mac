@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- macOS icon grid: 824px rounded square centred on a 1024 canvas. Main runs down (blue); a branch forks off and merges back (purple), like the Levels page. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2129"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="#30363d" stroke-width="3"/>
+  <g fill="none" stroke-width="48" stroke-linecap="round">
+    <path d="M392 268 V756" stroke="#4493f8"/>
+    <path d="M392 268 C392 360 632 340 632 432 V592 C632 684 392 664 392 756" stroke="#ab7df8"/>
+  </g>
+  <g stroke="#0d1117" stroke-width="24">
+    <circle cx="392" cy="268" r="64" fill="#4493f8"/>
+    <circle cx="392" cy="512" r="56" fill="#4493f8"/>
+    <circle cx="632" cy="432" r="56" fill="#ab7df8"/>
+    <circle cx="632" cy="592" r="56" fill="#ab7df8"/>
+    <circle cx="392" cy="756" r="64" fill="#e6edf3"/>
+  </g>
+</svg>

@@ -1,0 +1,277 @@
+{
+ "_comment": "Recorded gh --json output for octo-player/gitquest-sandbox after playing every Level 11 mission once (plus an earlier attempt of 11.1 and 11.2). Read by the fake gh in tests.",
+ "routes": {
+  "pr list": {
+   "json": [
+    {
+     "baseRefName": "main",
+     "body": "Closes #5",
+     "closingIssuesReferences": [
+      {
+       "id": "I_x",
+       "number": 5,
+       "repository": {
+        "id": "R_x",
+        "name": "gitquest-sandbox",
+        "owner": {
+         "id": "U_x",
+         "login": "octo-player"
+        }
+       },
+       "url": "https://github.com/octo-player/gitquest-sandbox/issues/5"
+      }
+     ],
+     "headRefName": "gq/11-6-guide",
+     "headRefOid": "a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6",
+     "mergeCommit": {
+      "oid": "e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6"
+     },
+     "number": 7,
+     "reviews": [],
+     "state": "MERGED",
+     "statusCheckRollup": [],
+     "title": "docs: sync guide"
+    },
+    {
+     "baseRefName": "main",
+     "body": "",
+     "closingIssuesReferences": [],
+     "headRefName": "gq/11-5-squash",
+     "headRefOid": "b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5",
+     "mergeCommit": {
+      "oid": "e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5"
+     },
+     "number": 6,
+     "reviews": [],
+     "state": "MERGED",
+     "statusCheckRollup": [],
+     "title": "Squash"
+    },
+    {
+     "baseRefName": "main",
+     "body": "",
+     "closingIssuesReferences": [],
+     "headRefName": "gq/11-4-review",
+     "headRefOid": "a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4",
+     "mergeCommit": null,
+     "number": 4,
+     "reviews": [
+      {
+       "id": "PRR_x",
+       "author": {
+        "login": "octo-player"
+       },
+       "authorAssociation": "OWNER",
+       "body": "Checklist reads well, checks are green.",
+       "submittedAt": "2026-11-20T10:05:00Z",
+       "includesCreatedEdit": false,
+       "reactionGroups": [],
+       "state": "COMMENTED",
+       "commit": {
+        "oid": "a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4"
+       }
+      }
+     ],
+     "state": "OPEN",
+     "statusCheckRollup": [
+      {
+       "__typename": "CheckRun",
+       "completedAt": "2026-11-20T10:02:11Z",
+       "conclusion": "SUCCESS",
+       "detailsUrl": "https://github.com/octo-player/gitquest-sandbox/actions/runs/1/job/1",
+       "name": "check",
+       "startedAt": "2026-11-20T10:01:52Z",
+       "status": "COMPLETED",
+       "workflowName": "CI"
+      }
+     ],
+     "title": "docs: review checklist"
+    },
+    {
+     "baseRefName": "main",
+     "body": "## What\nA hello note.\n\n## Why\nTo try pull requests.",
+     "closingIssuesReferences": [],
+     "headRefName": "gq/11-1-hello-2",
+     "headRefOid": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+     "mergeCommit": null,
+     "number": 2,
+     "reviews": [],
+     "state": "OPEN",
+     "statusCheckRollup": [],
+     "title": "docs: hello note"
+    },
+    {
+     "baseRefName": "main",
+     "body": "## What\n\n## Why",
+     "closingIssuesReferences": [],
+     "headRefName": "gq/11-1-hello",
+     "headRefOid": "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
+     "mergeCommit": null,
+     "number": 1,
+     "reviews": [],
+     "state": "OPEN",
+     "statusCheckRollup": [],
+     "title": "docs: hello note"
+    }
+   ]
+  },
+  "run list": {
+   "json": [
+    {
+     "conclusion": "success",
+     "databaseId": 19000000008,
+     "headBranch": "gq/11-8-secret",
+     "headSha": "a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8",
+     "name": "Deploy",
+     "status": "completed",
+     "workflowName": "Deploy"
+    },
+    {
+     "conclusion": "success",
+     "databaseId": 19000000004,
+     "headBranch": "gq/11-4-review",
+     "headSha": "a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4",
+     "name": "CI",
+     "status": "completed",
+     "workflowName": "CI"
+    },
+    {
+     "conclusion": "success",
+     "databaseId": 19000000003,
+     "headBranch": "gq/11-3-fix",
+     "headSha": "b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3",
+     "name": "CI",
+     "status": "completed",
+     "workflowName": "CI"
+    },
+    {
+     "conclusion": "failure",
+     "databaseId": 19000000002,
+     "headBranch": "gq/11-3-fix",
+     "headSha": "a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3",
+     "name": "CI",
+     "status": "completed",
+     "workflowName": "CI"
+    },
+    {
+     "conclusion": "success",
+     "databaseId": 19000000001,
+     "headBranch": "gq/11-2-ci",
+     "headSha": "a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2",
+     "name": "CI",
+     "status": "completed",
+     "workflowName": "CI"
+    },
+    {
+     "conclusion": "success",
+     "databaseId": 18000000001,
+     "headBranch": "gq/11-2-ci",
+     "headSha": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+     "name": "CI",
+     "status": "completed",
+     "workflowName": "CI"
+    }
+   ]
+  },
+  "issue list": {
+   "json": [
+    {
+     "number": 5,
+     "state": "CLOSED",
+     "title": "Write a sync guide"
+    },
+    {
+     "number": 3,
+     "state": "OPEN",
+     "title": "Old question"
+    }
+   ]
+  },
+  "release list": {
+   "json": [
+    {
+     "isDraft": false,
+     "name": "v0.1.1",
+     "tagName": "v0.1.1"
+    },
+    {
+     "isDraft": false,
+     "name": "v0.1.0",
+     "tagName": "v0.1.0"
+    }
+   ]
+  },
+  "api repos/octo-player/gitquest-sandbox/branches?per_page=100": {
+   "json": [
+    {
+     "name": "gq/11-1-hello",
+     "commit": {
+      "sha": "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "gq/11-1-hello-2",
+     "commit": {
+      "sha": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "gq/11-2-ci",
+     "commit": {
+      "sha": "a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "gq/11-3-fix",
+     "commit": {
+      "sha": "b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "gq/11-4-review",
+     "commit": {
+      "sha": "a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "gq/11-8-secret",
+     "commit": {
+      "sha": "a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8",
+      "url": "x"
+     },
+     "protected": false
+    },
+    {
+     "name": "main",
+     "commit": {
+      "sha": "a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7",
+      "url": "x"
+     },
+     "protected": false
+    }
+   ]
+  },
+  "secret list": {
+   "json": [
+    {
+     "name": "DEPLOY_TOKEN",
+     "updatedAt": "2026-11-20T10:06:00Z"
+    }
+   ]
+  },
+  "api repos/octo-player/gitquest-sandbox/branches/main/protection": {
+   "stderr": "gh: Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)\n",
+   "code": 1
+  }
+ }
+}

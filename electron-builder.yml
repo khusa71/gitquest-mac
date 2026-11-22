@@ -1,0 +1,45 @@
+# electron-builder config — macOS only. Build with `npm run dist`.
+appId: dev.gitquest.mac
+productName: GitQuest
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  # Natural voice (kokoro-js → transformers.js → onnxruntime-node): Node build only, Apple Silicon only.
+  - "!node_modules/onnxruntime-web/**"
+  - "!node_modules/onnxruntime-node/bin/napi-v3/{linux,win32}/**"
+  - "!node_modules/onnxruntime-node/bin/napi-v3/darwin/x64/**"
+  - "!node_modules/@huggingface/transformers/dist/{*.map,*.wasm,transformers.js,transformers.min.js,transformers.web*}"
+  - "!node_modules/@huggingface/transformers/.cache/**" # a dev-time model download; players download into ~/.gitquest/models
+asarUnpack:
+  - node_modules/node-pty/**
+  # Native code must live outside app.asar: onnxruntime's .node + its dylib, sharp (imported by transformers.js) + libvips.
+  - node_modules/onnxruntime-node/**
+  - node_modules/sharp/**
+  - node_modules/@img/**
+extraResources:
+  - from: resources/bin
+    to: bin
+npmRebuild: true
+mac:
+  category: public.app-category.developer-tools
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # No Apple Developer account yet: ad-hoc sign ("-"). To ship signed + notarized builds, see README "Signing".
+  identity: "-"
+  notarize: false
+  extendInfo:
+    NSSpeechRecognitionUsageDescription: GitQuest listens so you can talk to your git tutor
+    NSMicrophoneUsageDescription: GitQuest listens so you can talk to your git tutor
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}

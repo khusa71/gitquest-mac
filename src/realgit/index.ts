@@ -1,0 +1,357 @@
+/**
+ * realgit — the only module that runs git. Node only (main process), no Electron imports.
+ * Owner: realgit agent. The signatures below are the contract.
+ */
+import { execFile } from 'node:child_process';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { gitRaw } from './exec';
+
+export interface GitQuestPaths {
+  /** ~/GitQuest — player-visible folder. */
+  readonly root: string;
+  /** ~/GitQuest/nova — the story repo the player works in. */
+  readonly repo: string;
+  /** ~/.gitquest — app data. */
+  readonly data: string;
+  /** ~/.gitquest/gitconfig — curated global config for every git call and the player's shell. */
+  readonly gitconfig: string;
+  /** ~/.gitquest/remotes/nova.git — bare repo standing in for GitHub ("origin"). */
+  readonly remote: string;
+  /** ~/.gitquest/snapshots — undo checkpoints. */
+  readonly snapshots: string;
+  /** ~/.gitquest/progress.json */
+  readonly progress: string;
+  /** ~/.gitquest/shell — generated zsh/bash rc files with GitQuest hooks. */
+  readonly shell: string;
+}
+
+export function defaultPaths(home: string = os.homedir()): GitQuestPaths {
+  const data = path.join(home, '.gitquest');
+  return {
+    root: path.join(home, 'GitQuest'),
+    repo: path.join(home, 'GitQuest', 'nova'),
+    data,
+    gitconfig: path.join(data, 'gitconfig'),
+    remote: path.join(data, 'remotes', 'nova.git'),
+    snapshots: path.join(data, 'snapshots'),
+    progress: path.join(data, 'progress.json'),
+    shell: path.join(data, 'shell'),
+  };
+}
+
+export interface GitResult {
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly code: number;
+}
+
+export interface Person {
+  readonly name: string;
+  readonly email: string;
+}
+
+/** Runs git with argv (never through a shell). Rejects only if git cannot be spawned. */
+export async function git(
+  args: readonly string[],
+  opts: { readonly cwd: string; readonly env?: NodeJS.ProcessEnv; readonly input?: string },
+): Promise<GitResult> {
+  const result = await gitRaw(args, opts);
+  return { stdout: result.stdout.toString('utf8'), stderr: result.stderr, code: result.code };
+}
+
+/** "2.50.1" or null when git is not installed. */
+export async function gitVersion(): Promise<string | null> {
+  try {
+    const { stdout, code } = await git(['--version'], { cwd: os.tmpdir() });
+    return code === 0 ? (/(\d+\.\d+(?:\.\d+)?)/.exec(stdout)?.[1] ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Environment for every git call GitQuest makes AND for the player's shell:
+ * GIT_CONFIG_GLOBAL → paths.gitconfig, GIT_CONFIG_NOSYSTEM=1, GIT_TERMINAL_PROMPT=0,
+ * editor nano, pager off. The player's ~/.gitconfig is never read or written.
+ */
+export function sandboxEnv(paths: GitQuestPaths, base: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {
+    ...base,
+    GIT_CONFIG_GLOBAL: paths.gitconfig,
+    GIT_CONFIG_NOSYSTEM: '1',
+    GIT_TERMINAL_PROMPT: '0',
+    GIT_EDITOR: 'nano',
+    GIT_PAGER: 'cat',
+    // The player's shell keeps their own pager and locale; GitQuest's own git calls force English in exec.ts.
+    LANG: base.LANG ?? 'en_US.UTF-8',
+  };
+  // LANGUAGE beats LC_ALL for gettext, so a French LANGUAGE would still translate git.
+  for (const key of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'LANGUAGE']) delete env[key];
+  return env;
+}
+
+/** Quoted git-config value / subsection (escapes `\` and `"`, drops newlines). */
+function cfg(value: string): string {
+  return `"${value.replace(/[\r\n]/g, ' ').replace(/[\\"]/g, (c) => `\\${c}`)}"`;
+}
+
+/**
+ * Lets practice repos push to and clone from github.com with gh's login (Level 11), in the sandbox gitconfig only:
+ * `credential.https://github.com.helper = !gh auth git-credential`. The player's ~/.gitconfig is never touched. Idempotent.
+ */
+export async function useGhCredentials(paths: GitQuestPaths, ghPath: string): Promise<void> {
+  const key = 'credential.https://github.com.helper';
+  const file = ['config', '--file', paths.gitconfig];
+  const env = sandboxEnv(paths);
+  await git([...file, '--unset-all', key], { cwd: paths.data, env }); // exit 5 when absent: fine
+  // The empty value resets helpers configured elsewhere; then only gh answers, for github.com only.
+  for (const value of ['', `!'${ghPath.replace(/'/g, `'\\''`)}' auth git-credential`]) {
+    const result = await git([...file, '--add', key, value], { cwd: paths.data, env });
+    if (result.code !== 0) throw new Error(`git config failed: ${result.stderr.trim()}`);
+  }
+}
+
+/** Creates ~/.gitquest (curated gitconfig, bare origin, snapshot dir). Idempotent. `gh`: also add gh's GitHub login (useGhCredentials). */
+export async function ensureSandbox(paths: GitQuestPaths, player: Person, opts: { readonly gh?: string } = {}): Promise<void> {
+  for (const dir of [paths.data, paths.snapshots, paths.shell, paths.root, path.dirname(paths.remote)]) {
+    await fs.mkdir(dir, { recursive: true });
+  }
+  const config = [
+    '# Generated by GitQuest — rewritten on every launch.',
+    '[user]',
+    `\tname = ${cfg(player.name)}`,
+    `\temail = ${cfg(player.email)}`,
+    '[init]',
+    '\tdefaultBranch = main',
+    '[core]',
+    '\teditor = nano',
+    '\tpager = cat',
+    '\tautocrlf = false',
+    // Ignore only what the practice repo says: the player's own ~/.config/git/ignore stays out.
+    '\texcludesFile = /dev/null',
+    '[pull]',
+    '\trebase = false',
+    '[advice]',
+    '\tdetachedHead = true',
+    '[color]',
+    '\tui = auto',
+    `[url ${cfg(paths.remote)}]`,
+    '\tinsteadOf = https://git.nova.example/nova.git',
+    // The web game's story uses this URL in `git remote add origin …`.
+    '\tinsteadOf = git@github.com:nova/nova.git',
+    '',
+  ].join('\n');
+  await fs.writeFile(paths.gitconfig, config);
+  if (opts.gh !== undefined) await useGhCredentials(paths, opts.gh);
+  if (!(await exists(path.join(paths.remote, 'HEAD')))) {
+    const env = sandboxEnv(paths);
+    const result = await git(['init', '--bare', '-q', '-b', 'main', paths.remote], { cwd: paths.data, env });
+    if (result.code !== 0) throw new Error(`git init --bare failed: ${result.stderr.trim()}`);
+  }
+}
+
+async function exists(file: string): Promise<boolean> {
+  return fs.stat(file).then(
+    () => true,
+    () => false,
+  );
+}
+
+/**
+ * Same tokenizer as the web game's terminal: whitespace, single and double quotes,
+ * backslash escapes (outside quotes and inside double quotes). No variable expansion.
+ * `newlines`: `\n` inside double quotes becomes a newline (setup `edit`/`append` content).
+ */
+export function tokenize(input: string, opts: { readonly newlines?: boolean } = {}): string[] {
+  const tokens: string[] = [];
+  let current = '';
+  let quote: '"' | "'" | null = null;
+  let started = false;
+  for (let i = 0; i < input.length; i += 1) {
+    const char = input[i]!;
+    if (quote) {
+      if (char === quote) quote = null;
+      else if (char === '\\' && quote === '"' && i + 1 < input.length) {
+        const next = input[++i]!;
+        current += opts.newlines && next === 'n' ? '\n' : next;
+      }
+      else current += char;
+      started = true;
+    } else if (char === '"' || char === "'") {
+      quote = char;
+      started = true;
+    } else if (char === '\\') {
+      if (i + 1 < input.length) {
+        current += input[++i];
+        started = true;
+      }
+    } else if (/\s/.test(char)) {
+      if (started) tokens.push(current);
+      current = '';
+      started = false;
+    } else {
+      current += char;
+      started = true;
+    }
+  }
+  if (started) tokens.push(current);
+  return tokens;
+}
+
+/**
+ * Runs story setup commands in the web game's syntax against a real repo (no shell):
+ *   edit <file> "<content>"     → write file (content + "\n"; `\n` inside double quotes = newline)
+ *   append <file> "<line>"      → append the line (+ "\n"), adding a missing final newline first
+ *   touch <file> | rm <file> | mkdir <dir> | mv <a> <b> | chmod +x <file>
+ *   [VAR=value …] git <args…>   → real git (argv parsed with quotes)
+ *   git! <args…>                → real git, a non-zero exit is expected (stops on a conflict)
+ * `author` sets GIT_AUTHOR_* and GIT_COMMITTER_* (teammates); `date` fixes both dates for reproducible hashes.
+ * Throws with the failing command and git's stderr if a command fails.
+ */
+export async function runSetupCommands(
+  repoDir: string,
+  commands: readonly string[],
+  opts: { readonly env: NodeJS.ProcessEnv; readonly author?: Person; readonly date?: string },
+): Promise<void> {
+  const env: NodeJS.ProcessEnv = {
+    ...opts.env,
+    // Setup never opens an editor (`git merge --continue`, merge commits, rebase -i todo lists).
+    GIT_EDITOR: 'true',
+    GIT_MERGE_AUTOEDIT: 'no',
+    ...(opts.author && {
+      GIT_AUTHOR_NAME: opts.author.name,
+      GIT_AUTHOR_EMAIL: opts.author.email,
+      GIT_COMMITTER_NAME: opts.author.name,
+      GIT_COMMITTER_EMAIL: opts.author.email,
+    }),
+    ...(opts.date !== undefined && { GIT_AUTHOR_DATE: opts.date, GIT_COMMITTER_DATE: opts.date }),
+  };
+  const at = (file: string) => path.join(repoDir, file);
+  for (const command of commands) {
+    let tokens = tokenize(command);
+    if (tokens[0] === 'edit' || tokens[0] === 'append') tokens = tokenize(command, { newlines: true });
+    const vars: Record<string, string> = {};
+    while (tokens.length > 1 && /^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[0]!)) {
+      const [assignment] = tokens.splice(0, 1);
+      const eq = assignment!.indexOf('=');
+      vars[assignment!.slice(0, eq)] = assignment!.slice(eq + 1);
+    }
+    const [name, ...args] = tokens;
+    const [a, b] = args;
+    if (name === 'git' || name === 'git!') {
+      const result = await git(args, { cwd: repoDir, env: { ...env, ...vars } });
+      if (result.code !== 0 && name === 'git') {
+        throw new Error(`Setup command failed: ${command}\n${(result.stderr || result.stdout).trim()}`);
+      }
+    } else if ((name === 'edit' || name === 'append') && a !== undefined && args.length > 1) {
+      const file = at(a);
+      const text = `${args.slice(1).join(' ')}\n`;
+      await fs.mkdir(path.dirname(file), { recursive: true });
+      if (name === 'edit') {
+        await fs.writeFile(file, text);
+      } else {
+        const before = await fs.readFile(file, 'utf8').catch(() => '');
+        await fs.appendFile(file, before === '' || before.endsWith('\n') ? text : `\n${text}`);
+      }
+    } else if (name === 'touch' && a !== undefined) {
+      await fs.appendFile(at(a), '');
+    } else if (name === 'rm' && a !== undefined) {
+      await fs.rm(at(a));
+    } else if (name === 'mkdir' && a !== undefined) {
+      await fs.mkdir(at(a), { recursive: true });
+    } else if (name === 'mv' && a !== undefined && b !== undefined) {
+      await fs.mkdir(path.dirname(at(b)), { recursive: true });
+      await fs.rename(at(a), at(b));
+    } else if (name === 'chmod' && a === '+x' && b !== undefined) {
+      const { mode } = await fs.stat(at(b));
+      await fs.chmod(at(b), mode | 0o111);
+    } else {
+      throw new Error(`Unknown setup command: ${command}`);
+    }
+  }
+}
+
+export { readRepoState } from './state';
+export { readFacts, EMPTY_FACTS } from './facts';
+
+/** `cp -cR` (APFS clone) with a portable fallback. `src/.` copies the contents of src into dst. */
+async function copyTree(src: string, dst: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    execFile('cp', ['-cR', `${src}/.`, dst], (error) => (error ? reject(error) : resolve()));
+  }).catch(() => fs.cp(src, dst, { recursive: true, force: true }));
+}
+
+/** Empties dir (including dotfiles) without removing dir itself, then copies src's contents into it. */
+async function replaceContents(src: string, dir: string): Promise<void> {
+  await fs.mkdir(dir, { recursive: true });
+  for (const entry of await fs.readdir(dir)) {
+    await fs.rm(path.join(dir, entry), { recursive: true, force: true });
+  }
+  await copyTree(src, dir);
+}
+
+/** Copies the repo (and the bare remote) into snapDir using APFS clones (`cp -c`) when available. */
+export async function snapshot(paths: GitQuestPaths, snapDir: string): Promise<void> {
+  await fs.rm(snapDir, { recursive: true, force: true });
+  for (const [src, name] of [
+    [paths.repo, 'repo'],
+    [paths.remote, 'remote'],
+  ] as const) {
+    if (!(await exists(src))) continue;
+    await fs.mkdir(path.join(snapDir, name), { recursive: true });
+    await copyTree(src, path.join(snapDir, name));
+  }
+}
+
+/**
+ * Restores a snapshot made by `snapshot` over the repo and remote.
+ * In-place rule: the repo directory itself is never deleted or renamed (the shell's cwd lives there).
+ */
+export async function restore(paths: GitQuestPaths, snapDir: string): Promise<void> {
+  for (const [dst, name] of [
+    [paths.repo, 'repo'],
+    [paths.remote, 'remote'],
+  ] as const) {
+    const src = path.join(snapDir, name);
+    if (await exists(src)) await replaceContents(src, dst);
+  }
+  await settleRepo(paths, sandboxEnv(paths));
+}
+
+/** Directories of the repo's linked worktrees, as `git worktree list` prints them (realpaths). */
+async function linkedWorktrees(repoDir: string, env: NodeJS.ProcessEnv): Promise<string[]> {
+  const list = await git(['worktree', 'list', '--porcelain'], { cwd: repoDir, env });
+  return list.stdout
+    .split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => line.slice('worktree '.length))
+    .slice(1);
+}
+
+/**
+ * Call after any copy into the repo (rebuild, undo restore):
+ * - removes folders under paths.root that are worktrees of this repo (a `.git` FILE pointing into
+ *   <repo>/.git/worktrees) but that the restored repo no longer lists, then `git worktree prune`;
+ * - re-stats the index of the repo and of every linked worktree: a copy keeps the original stat data,
+ *   so git would see every file as possibly changed ("Entry 'x' not uptodate" on reset --keep / merge).
+ */
+export async function settleRepo(paths: GitQuestPaths, env: NodeJS.ProcessEnv): Promise<void> {
+  if (!(await exists(path.join(paths.repo, '.git')))) return;
+  const real = (dir: string) => fs.realpath(dir).catch(() => dir);
+  const listed = new Set(await Promise.all((await linkedWorktrees(paths.repo, env)).map(real)));
+  const adminDirs = [...new Set([paths.repo, await real(paths.repo)])].map((repo) => path.join(repo, '.git', 'worktrees') + path.sep);
+  for (const name of await fs.readdir(paths.root).catch(() => [] as string[])) {
+    const dir = path.join(paths.root, name);
+    if (dir === paths.repo) continue;
+    const pointer = await fs.readFile(path.join(dir, '.git'), 'utf8').catch(() => ''); // '' for a .git directory
+    const target = /^gitdir: (.+)$/m.exec(pointer)?.[1]?.trim();
+    if (target === undefined || !adminDirs.some((admin) => target.startsWith(admin))) continue;
+    if (!listed.has(await real(dir))) await fs.rm(dir, { recursive: true, force: true });
+  }
+  await git(['worktree', 'prune'], { cwd: paths.repo, env });
+  for (const dir of [paths.repo, ...(await linkedWorktrees(paths.repo, env))]) {
+    if (await exists(dir)) await git(['update-index', '-q', '--refresh'], { cwd: dir, env }); // exit 1 = real changes, fine
+  }
+}
